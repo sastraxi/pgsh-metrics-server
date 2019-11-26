@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 
 import mongo from './mongo';
 
+const METRICS_COLLECTION = 'metrics';
 const app = express();
 
 app.use(bodyParser.json());
@@ -16,8 +17,21 @@ app.get('/', (req, res) => {
   });
 });
 
-app.post('/', (req, res) => {
-  console.log('POST', req.body);
+app.post('/', async (req, res) => {
+  const metrics = req.body;
+  try {
+    const db = await mongo();
+    const collection = db.collection(METRICS_COLLECTION);
+
+    const result = await collection.insertMany(metrics);
+    res.status(200).json({
+      status: 'ok',
+      result,
+    });
+  } catch (err) {
+    console.error('mongo', err);
+    res.status(429).json({ status: 'try again soon' });
+  }
 });
 
 const port = process.env.PORT || 3000;
