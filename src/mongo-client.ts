@@ -1,4 +1,4 @@
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db, MongoCallback } from 'mongodb';
 
 // generate database URL from environment
 let databaseUrl = process.env.MONGO_URL;
@@ -7,10 +7,9 @@ if (!databaseUrl) {
     `@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`;
 }
 
-export default async (): Promise<Db> => {
+export default (cb: MongoCallback<MongoClient>): void => {
   console.log(databaseUrl);
-  const client = await MongoClient.connect(databaseUrl, {
+  return MongoClient.connect(databaseUrl, {
     authSource: 'admin',
-  });
-  return client.db();
+  }, cb);
 };
