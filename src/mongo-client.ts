@@ -7,9 +7,9 @@ if (!databaseUrl) {
     `@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`;
 }
 
-export default (cb: MongoCallback<MongoClient>): void => {
-  console.log(databaseUrl);
-  return MongoClient.connect(databaseUrl, {
-    authSource: 'admin',
+export default (cb: MongoCallback<MongoClient>): void =>
+  MongoClient.connect(databaseUrl, {
+    authSource: process.env.MONGO_AUTH_DATABASE,
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
   }, cb);
-};

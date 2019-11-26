@@ -51,16 +51,14 @@ app.get('/', (req, res) => {
 });
 
 mongoClient((err, mongo: MongoClient) => {
-  console.error(err);
-
   app.post('/', async (req, res) => {
     const { metrics, signature } = req.body;
 
-    // if (!signature || hmac(metrics) !== signature) {
-    //   return res.status(400).json({
-    //     message: 'Invalid signature!',
-    //   })
-    // }
+    if (!signature || hmac(metrics) !== signature) {
+      return res.status(400).json({
+        message: 'Invalid signature!',
+      })
+    }
 
     const limiter = group.key(req.ip);
 
