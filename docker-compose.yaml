@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+  postgres:
+    image: mongo:4.2-bionic
+    ports:
+      - "${MONGO_PORT}:5432"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USER}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
+      MONGO_INITDB_DATABASE: "${MONGO_DATABASE}"
