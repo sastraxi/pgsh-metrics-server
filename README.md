@@ -1,9 +1,8 @@
-# Typescript / Express / Knex Template
+# pgsh metrics server
 
-Backend programming, configured for PostgreSQL.
+Build with Typescript, Express, and MongoDB.
 
-Useful commands include
-* `yarn dev`
-* `yarn knex migrate:make <name>`
-* `pgsh clone, pgsh switch, pgsh destroy`
-* `pgsh up`
+See [this pgsh issue](https://github.com/sastraxi/pgsh/issues/71) for more information.
+
+Deployed at https://pgsh-metrics.sastraxi.com.
+
