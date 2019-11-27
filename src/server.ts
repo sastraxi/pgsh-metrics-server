@@ -10,10 +10,7 @@ import { MongoClient } from 'mongodb';
 
 const METRICS_COLLECTION = 'metrics';
 
-// the point here isn't to make it impossible for people to forge
-// submissions to the metrics server -- it's just to make it so hard
-// to do so, you'd really have to want to cause some damage.
-const HMAC_KEY = '9abb6dfdfdfdf';
+const { HMAC_KEY } = process.env;
 
 const hmac = (obj: any) =>
   crypto

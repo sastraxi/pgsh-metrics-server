@@ -1,5 +1,5 @@
 {
-  "name": "typescript-express-knex",
+  "name": "pgsh-metrics-server",
   "version": "0.0.1",
   "description": "A template for backend programming with typescript, express, and knex.",
   "main": "src/server.ts",
@@ -26,6 +26,7 @@
     "@types/express": "^4.17.2",
     "@types/express-session": "^1.15.16",
     "@types/mongodb": "^3.3.11",
+    "@types/node": "^12.12.14",
     "dotenv-cli": "^3.1.0",
     "nodemon": "^2.0.1",
     "tslint": "^5.20.1",
