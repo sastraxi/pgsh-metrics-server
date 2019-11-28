@@ -4,7 +4,6 @@ import createDebugger from 'debug';
 import crypto from 'crypto';
 import express from 'express';
 import Bottleneck from 'bottleneck';
-import bodyParser from 'body-parser';
 
 const debug = createDebugger('metrics');
 
@@ -41,9 +40,6 @@ const group = new Bottleneck.Group({
   timeout: 60 * 60 * 1000,
 });
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'Ready to build something awesome?',
@@ -57,7 +53,8 @@ try {
     }
 
     app.post('/', async (req, res) => {
-      const { metrics, signature } = req.body;
+      const metrics = req.body.split('\n');
+      const signature = req.headers["x-pgsh-signature"];
 
       if (!signature || hmac(metrics) !== signature) {
         // TODO: debug(...)
@@ -90,7 +87,7 @@ try {
             .header('X-Rate-Limit-Remaining', `${await limiter.currentReservoir()}`)
             .json({
               status: 'OK',
-              result,
+              insert: metrics.length,
             });
         } catch (err) {
           console.error('mongo', err);
