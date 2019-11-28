@@ -52,6 +52,10 @@ app.get('/', (req, res) => {
 
 try {
   mongoClient((err, mongo: MongoClient) => {
+    if (err) {
+      console.error(err);
+    }
+
     app.post('/', async (req, res) => {
       const { metrics, signature } = req.body;
 
@@ -99,5 +103,5 @@ try {
   });
 } catch (err) {
   // TODO: debug(...)
-  console.error('outer mongo', err);
+  console.error('Received error at top-level!', err);
 }
