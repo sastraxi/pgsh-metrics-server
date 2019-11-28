@@ -47,47 +47,51 @@ app.get('/', (req, res) => {
   });
 });
 
-mongoClient((err, mongo: MongoClient) => {
-  app.post('/', async (req, res) => {
-    const { metrics, signature } = req.body;
+try {
+  mongoClient((err, mongo: MongoClient) => {
+    app.post('/', async (req, res) => {
+      const { metrics, signature } = req.body;
 
-    if (!signature || hmac(metrics) !== signature) {
-      return res.status(400).json({
-        message: 'Invalid signature!',
-      })
-    }
+      if (!signature || hmac(metrics) !== signature) {
+        return res.status(400).json({
+          message: 'Invalid signature!',
+        })
+      }
 
-    const limiter = group.key(req.ip);
+      const limiter = group.key(req.ip);
 
-    if (await limiter.currentReservoir() < metrics.length) {
-      return res
-        .status(429)
-        .header('X-Rate-Limit-Remaining', `${await limiter.currentReservoir()}`)
-        .json({
-          status: 'Over rate limit!',
-        });
-    }
-
-    return limiter.schedule({ weight: metrics.length }, async () => {
-      try {
-        const db = mongo.db();
-        const collection = db.collection(METRICS_COLLECTION);
-        const result = await collection.insertMany(metrics);
+      if (await limiter.currentReservoir() < metrics.length) {
         return res
-          .status(200)
+          .status(429)
           .header('X-Rate-Limit-Remaining', `${await limiter.currentReservoir()}`)
           .json({
-            status: 'OK',
-            result,
+            status: 'Over rate limit!',
           });
-      } catch (err) {
-        console.error('mongo', err);
-        return res.status(500).json({ status: 'Mongo errored out!' });
       }
-    }).catch(console.error);
-  });
 
-  const port = process.env.PORT || 3000;
-  app.listen(port , () =>
-    console.log('Metrics server running at http://localhost:' + port));
-});
+      return limiter.schedule({ weight: metrics.length }, async () => {
+        try {
+          const db = mongo.db();
+          const collection = db.collection(METRICS_COLLECTION);
+          const result = await collection.insertMany(metrics);
+          return res
+            .status(200)
+            .header('X-Rate-Limit-Remaining', `${await limiter.currentReservoir()}`)
+            .json({
+              status: 'OK',
+              result,
+            });
+        } catch (err) {
+          console.error('mongo', err);
+          return res.status(500).json({ status: 'Mongo errored out!' });
+        }
+      }).catch(console.error);
+    });
+
+    const port = process.env.PORT || 3000;
+    app.listen(port , () =>
+      console.log('Metrics server running at http://localhost:' + port));
+  });
+} catch (err) {
+  console.error('outer mongo', err);
+}
