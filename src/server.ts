@@ -83,6 +83,8 @@ try {
           const db = mongo.db();
           const collection = db.collection(METRICS_COLLECTION);
           const result = await collection.insertMany(metrics);
+          // TODO: debug(...)
+          console.log(`Inserted ${metrics.length} records!`);
           return res
             .status(200)
             .header('X-Rate-Limit-Remaining', `${await limiter.currentReservoir()}`)
