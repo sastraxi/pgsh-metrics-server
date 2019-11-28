@@ -1,9 +1,12 @@
 import 'dotenv/config';
 
+import createDebugger from 'debug';
 import crypto from 'crypto';
 import express from 'express';
 import Bottleneck from 'bottleneck';
 import bodyParser from 'body-parser';
+
+const debug = createDebugger('metrics');
 
 import mongoClient from './mongo-client';
 import { MongoClient } from 'mongodb';
@@ -53,6 +56,8 @@ try {
       const { metrics, signature } = req.body;
 
       if (!signature || hmac(metrics) !== signature) {
+        // TODO: debug(...)
+        console.error(`- invalid sig: ${signature}, expected: ${hmac(metrics)}`);
         return res.status(400).json({
           message: 'Invalid signature!',
         })
@@ -93,5 +98,6 @@ try {
       console.log('Metrics server running at http://localhost:' + port));
   });
 } catch (err) {
+  // TODO: debug(...)
   console.error('outer mongo', err);
 }
