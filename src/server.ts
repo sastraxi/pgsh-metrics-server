@@ -23,7 +23,7 @@ const hmac = (s: string) =>
 
 const app = express();
 
-app.use(bodyParser());
+app.use(bodyParser.text({ type: "*/*" }));
 
 const group = new Bottleneck.Group({
   // if we receive multiple 
@@ -56,17 +56,22 @@ try {
     }
 
     app.post('/', async (req, res) => {
+      const body: string = Array.isArray(req.body) ? req.body.join('\n') : req.body;
+
       const signature = req.headers["x-pgsh-signature"];
-      if (!signature || hmac(req.body) !== signature) {
+      if (!signature || hmac(body) !== signature) {
         // TODO: debug(...)
-        console.error(`- invalid sig: ${signature}, expected: ${hmac(signature)}`);
+        console.error(`- invalid sig: ${signature}, expected: ${hmac(body)}`);
         return res.status(400).json({
           message: 'Invalid signature!',
         })
       }
 
       const limiter = group.key(req.ip);
-      const metrics = req.body.split('\n');
+      const metrics = body.split('\n')
+        .filter(x => x.trim() !== '')
+        .map(x => JSON.parse(x));
+
       if (await limiter.currentReservoir() < metrics.length) {
         return res
           .status(429)
