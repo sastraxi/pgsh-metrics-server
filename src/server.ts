@@ -57,7 +57,6 @@ try {
 
     app.post('/', async (req, res) => {
       const body: string = Array.isArray(req.body) ? req.body.join('\n') : req.body;
-      console.log(req.body);
 
       const signature = req.headers["x-pgsh-signature"];
       if (!signature || hmac(body) !== signature) {
