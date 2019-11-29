@@ -4,6 +4,7 @@ import createDebugger from 'debug';
 import crypto from 'crypto';
 import express from 'express';
 import Bottleneck from 'bottleneck';
+import bodyParser from 'body-parser';
 
 const debug = createDebugger('metrics');
 
@@ -14,13 +15,15 @@ const METRICS_COLLECTION = 'metrics';
 
 const { HMAC_KEY } = process.env;
 
-const hmac = (obj: any) =>
+const hmac = (s: string) =>
   crypto
     .createHmac('sha1', HMAC_KEY)
-    .update(JSON.stringify(obj))
+    .update(s)
     .digest('hex');
 
 const app = express();
+
+app.use(bodyParser());
 
 const group = new Bottleneck.Group({
   // if we receive multiple 
@@ -53,19 +56,17 @@ try {
     }
 
     app.post('/', async (req, res) => {
-      const metrics = req.body.split('\n');
       const signature = req.headers["x-pgsh-signature"];
-
-      if (!signature || hmac(metrics) !== signature) {
+      if (!signature || hmac(req.body) !== signature) {
         // TODO: debug(...)
-        console.error(`- invalid sig: ${signature}, expected: ${hmac(metrics)}`);
+        console.error(`- invalid sig: ${signature}, expected: ${hmac(signature)}`);
         return res.status(400).json({
           message: 'Invalid signature!',
         })
       }
 
       const limiter = group.key(req.ip);
-
+      const metrics = req.body.split('\n');
       if (await limiter.currentReservoir() < metrics.length) {
         return res
           .status(429)
